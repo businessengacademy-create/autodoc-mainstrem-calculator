@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>General Stream — Student Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(216, 48, 87, 0.15);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+        h1 { color: #d83057; font-size: 32px; font-weight: 700; margin-bottom: 10px; text-align: center; }
+        .subtitle { color: #666; text-align: center; margin-bottom: 40px; font-size: 14px; }
+        .form-group { margin-bottom: 25px; }
+        label { display: block; color: #000; font-weight: 600; margin-bottom: 8px; font-size: 14px; }
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+            background: white;
+            color: #000;
+        }
+        select:focus { outline: none; border-color: #d83057; box-shadow: 0 0 0 3px rgba(216, 48, 87, 0.1); }
+        select:hover { border-color: #d83057; }
+        .result-container {
+            background: linear-gradient(135deg, #d83057 0%, #c02850 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(216, 48, 87, 0.3);
+        }
+        .result-label { color: white; font-size: 14px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; opacity: 0.9; }
+        .result-value { color: white; font-size: 48px; font-weight: 700; margin-bottom: 15px; }
+        .breakdown { color: white; font-size: 13px; opacity: 0.85; line-height: 1.6; }
+        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; }
+        button {
+            padding: 16px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-calculate { background: #d83057; color: white; box-shadow: 0 4px 15px rgba(216, 48, 87, 0.3); }
+        .btn-calculate:hover { background: #c02850; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(216, 48, 87, 0.4); }
+        .btn-calculate:active { transform: translateY(0); }
+        .btn-reset { background: white; color: #d83057; border: 2px solid #d83057; }
+        .btn-reset:hover { background: #d83057; color: white; }
+        .input-hint { font-size: 12px; color: #999; margin-top: 5px; }
+        .input-hint.warning { color: #d83057; }
+        .hidden { display: none; }
+        .info-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .info-card {
+            background: #fdf0f3;
+            border: 2px solid #f5c6d0;
+            border-radius: 12px;
+            padding: 16px 12px;
+            text-align: center;
+        }
+        .info-card-value { color: #d83057; font-size: 26px; font-weight: 700; line-height: 1; margin-bottom: 6px; }
+        .info-card-label { color: #555; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .info-card-sub { color: #aaa; font-size: 11px; margin-top: 3px; }
+        @media (max-width: 600px) {
+            .container { padding: 30px 20px; }
+            h1 { font-size: 26px; }
+            .result-value { font-size: 36px; }
+            .button-group { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 400px) { .info-cards { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 General Stream</h1>
+        <p class="subtitle">Language courses calculator · 2026</p>
+
+        <form id="calcForm">
+
+            <div class="form-group">
+                <label for="location">Location</label>
+                <select id="location">
+                    <option value="">Select location</option>
+                    <option value="ukraine">Ukraine</option>
+                    <option value="moldova">Moldova</option>
+                    <option value="portugal">Portugal</option>
+                    <option value="poland">Poland</option>
+                    <option value="czech">Czech Republic</option>
+                    <option value="netherlands">Netherlands</option>
+                    <option value="luxembourg">Luxembourg</option>
+                    <option value="italy">Italy</option>
+                    <option value="belgium">Belgium</option>
+                    <option value="france">France</option>
+                    <option value="uk">United Kingdom</option>
+                </select>
+            </div>
+
+            <div class="form-group hidden" id="infoCardsContainer">
+                <div class="info-cards">
+                    <div class="info-card">
+                        <div class="info-card-value" id="infoPrice">—</div>
+                        <div class="info-card-label">Cost per Lesson, €</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-value">5</div>
+                        <div class="info-card-label">People in Group</div>
+                        <div class="info-card-sub">range: 4–6</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-value">2</div>
+                        <div class="info-card-label">Lessons per Week</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group hidden" id="periodContainer">
+                <label for="startMonth">Month of Joining</label>
+                <select id="startMonth">
+                    <option value="">Select month</option>
+                    <option value="1">January 2026</option>
+                    <option value="2">February 2026</option>
+                    <option value="3">March 2026</option>
+                    <option value="4">April 2026</option>
+                    <option value="5">May 2026</option>
+                    <option value="6">June 2026</option>
+                    <option value="7">July 2026</option>
+                    <option value="8">August 2026</option>
+                    <option value="9">September 2026</option>
+                </select>
+                <div class="input-hint" id="periodHint">Training period: January 13 – December 20, 2026</div>
+            </div>
+
+            <div class="result-container hidden" id="resultContainer">
+                <div class="result-label">Total Investment per Student</div>
+                <div class="result-value" id="totalCost">€0.00</div>
+                <div class="breakdown" id="breakdown"></div>
+            </div>
+
+            <div class="button-group hidden" id="buttonGroup">
+                <button type="submit" class="btn-calculate">Calculate Total</button>
+                <button type="button" class="btn-reset" onclick="resetForm()">Reset</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const PRICES = {
+            ukraine:     20,
+            moldova:     21.5,
+            portugal:    24,
+            poland:      24,
+            czech:       24,
+            netherlands: 24,
+            luxembourg:  24,
+            italy:       24,
+            belgium:     24,
+            france:      24,
+            uk:          24,
+        };
+
+        const MONTHS = ['','January','February','March','April','May','June',
+                        'July','August','September','October','November','December'];
+
+        const locEl        = document.getElementById('location');
+        const startMonthEl = document.getElementById('startMonth');
+        const periodHintEl = document.getElementById('periodHint');
+        const resultEl     = document.getElementById('resultContainer');
+        const totalCostEl  = document.getElementById('totalCost');
+        const breakdownEl  = document.getElementById('breakdown');
+        const form         = document.getElementById('calcForm');
+
+        const YEAR     = 2026;
+        const END_DATE = new Date(YEAR, 11, 20);
+
+        function show(id) { document.getElementById(id).classList.remove('hidden'); }
+        function hide(id) { document.getElementById(id).classList.add('hidden'); }
+
+        locEl.addEventListener('change', function () {
+            const price = PRICES[this.value];
+            if (!price) return;
+            window.lessonPrice = price;
+            document.getElementById('infoPrice').textContent = Number.isInteger(price) ? price : +price.toFixed(2);
+            show('infoCardsContainer');
+            show('periodContainer');
+            show('buttonGroup');
+            resultEl.classList.add('hidden');
+            startMonthEl.value = '';
+            periodHintEl.className = 'input-hint';
+            periodHintEl.textContent = 'Training period: January 13 – December 20, 2026';
+        });
+
+        startMonthEl.addEventListener('change', calc);
+        form.addEventListener('submit', e => { e.preventDefault(); calc(); });
+
+        function calc() {
+            const cost = window.lessonPrice || 0;
+            const sm   = parseInt(startMonthEl.value) || 0;
+
+            periodHintEl.className = 'input-hint';
+
+            if (!sm || !cost) { resultEl.classList.add('hidden'); return; }
+
+            const startDay  = sm === 1 ? 13 : 1;
+            const startDate = new Date(YEAR, sm - 1, startDay);
+
+            if (startDate > END_DATE) {
+                periodHintEl.className = 'input-hint warning';
+                periodHintEl.textContent = 'Selected month is after December 20, 2026';
+                resultEl.classList.add('hidden');
+                return;
+            }
+
+            const days         = Math.round((END_DATE - startDate) / 86400000) + 1;
+            const weeks        = days / 7;
+            const totalLessons = Math.round(weeks * 2);
+            const perPerson    = cost / 5;
+            const grand        = perPerson * totalLessons;
+            const costDisplay  = Number.isInteger(cost) ? cost : +cost.toFixed(2);
+            const locName      = locEl.options[locEl.selectedIndex]?.text || '';
+
+            periodHintEl.textContent = MONTHS[sm] + ' ' + startDay + ' – December 20, 2026 (' +
+                                       Math.round(weeks * 10) / 10 + ' weeks)';
+
+            totalCostEl.textContent = '€' + grand.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            breakdownEl.innerHTML =
+                '<strong>' + MONTHS[sm] + ' ' + startDay + ', 2026 &rarr; December 20, 2026</strong><br>' +
+                Math.round(weeks * 10) / 10 + ' weeks &times; 2 lessons/week = <strong>' + totalLessons + ' lessons</strong><br>' +
+                '€' + costDisplay + ' &divide; 5 people = €' + perPerson.toFixed(2) + '/person per lesson<br>' +
+                'General Stream &middot; ' + locName;
+
+            resultEl.classList.remove('hidden');
+        }
+
+        function resetForm() {
+            form.reset();
+            ['infoCardsContainer','periodContainer','buttonGroup','resultContainer'].forEach(hide);
+            periodHintEl.textContent = 'Training period: January 13 – December 20, 2026';
+            window.lessonPrice = null;
+            document.getElementById('infoPrice').textContent = '—';
+        }
+    </script>
+</body>
+</html>
