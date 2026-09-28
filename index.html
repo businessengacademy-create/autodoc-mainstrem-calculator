@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>General Stream — Student Calculator</title>
+    <title>General Stream — Calculator</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -16,7 +16,50 @@
             align-items: center;
             padding: 20px;
         }
-        .container {
+
+        /* ── UNAUTHORIZED SCREEN ── */
+        #unauthorizedScreen {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(216, 48, 87, 0.15);
+            max-width: 420px;
+            width: 100%;
+            padding: 50px 40px;
+            text-align: center;
+        }
+        #unauthorizedScreen .lock-icon {
+            font-size: 56px;
+            margin-bottom: 20px;
+            display: block;
+        }
+        #unauthorizedScreen h2 {
+            color: #d83057;
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        #unauthorizedScreen p {
+            color: #888;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        #unauthorizedScreen .http-badge {
+            display: inline-block;
+            background: #fdf0f3;
+            border: 2px solid #f5c6d0;
+            color: #d83057;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 8px;
+            padding: 6px 14px;
+            margin-top: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── CALCULATOR ── */
+        #appScreen {
+            display: none;
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(216, 48, 87, 0.15);
@@ -28,7 +71,7 @@
         .subtitle { color: #666; text-align: center; margin-bottom: 40px; font-size: 14px; }
         .form-group { margin-bottom: 25px; }
         label { display: block; color: #000; font-weight: 600; margin-bottom: 8px; font-size: 14px; }
-        select {
+        select, input[type="number"] {
             width: 100%;
             padding: 14px 16px;
             border: 2px solid #e0e0e0;
@@ -39,8 +82,8 @@
             background: white;
             color: #000;
         }
-        select:focus { outline: none; border-color: #d83057; box-shadow: 0 0 0 3px rgba(216, 48, 87, 0.1); }
-        select:hover { border-color: #d83057; }
+        select:focus, input[type="number"]:focus { outline: none; border-color: #d83057; box-shadow: 0 0 0 3px rgba(216, 48, 87, 0.1); }
+        select:hover, input[type="number"]:hover { border-color: #d83057; }
         .result-container {
             background: linear-gradient(135deg, #d83057 0%, #c02850 100%);
             border-radius: 15px;
@@ -52,7 +95,7 @@
         .result-label { color: white; font-size: 14px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; opacity: 0.9; }
         .result-value { color: white; font-size: 48px; font-weight: 700; margin-bottom: 15px; }
         .breakdown { color: white; font-size: 13px; opacity: 0.85; line-height: 1.6; }
-        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; }
+        .button-group { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 25px; }
         button {
             padding: 16px 24px;
             border: none;
@@ -63,15 +106,40 @@
             transition: all 0.3s ease;
             font-family: 'Inter', sans-serif;
         }
-        .btn-calculate { background: #d83057; color: white; box-shadow: 0 4px 15px rgba(216, 48, 87, 0.3); }
-        .btn-calculate:hover { background: #c02850; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(216, 48, 87, 0.4); }
-        .btn-calculate:active { transform: translateY(0); }
         .btn-reset { background: white; color: #d83057; border: 2px solid #d83057; }
         .btn-reset:hover { background: #d83057; color: white; }
         .input-hint { font-size: 12px; color: #999; margin-top: 5px; }
         .input-hint.warning { color: #d83057; }
         .hidden { display: none; }
-        .info-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .eligibility-note {
+            display: none;
+            background: #fffbeb;
+            border: 2px solid #fcd34d;
+            border-left: 4px solid #f59e0b;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-top: 10px;
+            font-size: 12.5px;
+            color: #78350f;
+            line-height: 1.6;
+        }
+        .eligibility-note strong { color: #92400e; }
+        .tax-note {
+            display: none;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-top: 16px;
+            font-size: 12px;
+            color: white;
+            text-align: left;
+            line-height: 1.5;
+        }
+        .tax-note .icon { margin-right: 4px; }
+        .info-cards { display: grid; gap: 12px; }
+        .info-cards.cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .info-cards.cols-2 { grid-template-columns: repeat(2, 1fr); }
         .info-card {
             background: #fdf0f3;
             border: 2px solid #f5c6d0;
@@ -82,24 +150,76 @@
         .info-card-value { color: #d83057; font-size: 26px; font-weight: 700; line-height: 1; margin-bottom: 6px; }
         .info-card-label { color: #555; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
         .info-card-sub { color: #aaa; font-size: 11px; margin-top: 3px; }
+        .toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .toggle-btn {
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            color: #666;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+            text-align: center;
+        }
+        .toggle-btn:hover { border-color: #d83057; color: #d83057; }
+        .toggle-btn.active { background: #d83057; border-color: #d83057; color: white; }
+
         @media (max-width: 600px) {
-            .container { padding: 30px 20px; }
+            #appScreen { padding: 30px 20px; }
             h1 { font-size: 26px; }
             .result-value { font-size: 36px; }
-            .button-group { grid-template-columns: 1fr; }
+            .info-cards.cols-3 { grid-template-columns: 1fr; }
+            .info-cards.cols-2 { grid-template-columns: 1fr; }
         }
-        @media (max-width: 400px) { .info-cards { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    <div class="container">
+
+    <!-- ── UNAUTHORIZED ── -->
+    <div id="unauthorizedScreen">
+        <span class="lock-icon">🔒</span>
+        <h2>Unauthorized</h2>
+        <p>This tool is restricted to internal use only.<br>Please use the link provided by your team.</p>
+        <div class="http-badge">401 Unauthorized</div>
+    </div>
+
+    <!-- ── CALCULATOR ── -->
+    <div id="appScreen">
         <h1>🎓 General Stream</h1>
         <p class="subtitle">Language courses calculator · 2026</p>
 
         <form id="calcForm">
 
             <div class="form-group">
-                <label for="location">Location</label>
+                <label>Language</label>
+                <select id="language">
+                    <option value="">Select language</option>
+                    <option value="english">English</option>
+                    <option value="german">German</option>
+                    <option value="polish">Polish</option>
+                    <option value="portuguese">Portuguese</option>
+                    <option value="french">French</option>
+                    <option value="spanish">Spanish</option>
+                </select>
+            </div>
+
+            <div class="form-group hidden" id="typeContainer">
+                <label>Type</label>
+                <select id="streamType">
+                    <option value="">Select type</option>
+                </select>
+            </div>
+
+            <!-- Eligibility note for Individual -->
+            <div class="eligibility-note" id="eligibilityNote">
+                ⚠️ <strong>Warning:</strong> Only employees at grade <strong>M3 / P4 and above</strong> are eligible to enroll in individual courses. Exceptions for lower grades may be granted in cases of critical business need.
+            </div>
+
+            <div class="form-group hidden" id="locationContainer">
+                <label>Location</label>
                 <select id="location">
                     <option value="">Select location</option>
                     <option value="ukraine">Ukraine</option>
@@ -112,26 +232,28 @@
                     <option value="italy">Italy</option>
                     <option value="belgium">Belgium</option>
                     <option value="france">France</option>
-                    <option value="uk">United Kingdom</option>
+                    <option value="germany">Germany</option>
                 </select>
             </div>
 
-            <div class="form-group hidden" id="infoCardsContainer">
-                <div class="info-cards">
-                    <div class="info-card">
-                        <div class="info-card-value" id="infoPrice">—</div>
-                        <div class="info-card-label">Cost per Lesson, €</div>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-card-value">5</div>
-                        <div class="info-card-label">People in Group</div>
-                        <div class="info-card-sub">range: 4–6</div>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-card-value">2</div>
-                        <div class="info-card-label">Lessons per Week</div>
-                    </div>
+            <div class="form-group hidden" id="teacherContainer">
+                <label>Teacher Type</label>
+                <div class="toggle-group">
+                    <button type="button" class="toggle-btn" id="btnLocal" onclick="selectTeacher('local')">🧑‍🏫 Non-native</button>
+                    <button type="button" class="toggle-btn" id="btnNative" onclick="selectTeacher('native')">🌍 Native</button>
                 </div>
+                <div class="input-hint" style="margin-top:10px; display:flex; flex-direction:column; gap:5px;">
+                    <span>🧑‍🏫 <strong>Non-native</strong> — qualified teacher, the target language is not their first language</span>
+                    <span>🌍 <strong>Native</strong> — a teacher from a target language-speaking country</span>
+                </div>
+            </div>
+
+            <div class="form-group hidden" id="infoCardsContainer"></div>
+
+            <div class="form-group hidden" id="lessonsContainer">
+                <label for="lessonsPerWeek">Lessons per Week</label>
+                <input type="number" id="lessonsPerWeek" min="1" max="7" placeholder="Enter number (1–7)">
+                <div class="input-hint">Standard format: <strong>2 lessons per week</strong>, 60 min each</div>
             </div>
 
             <div class="form-group hidden" id="periodContainer">
@@ -147,118 +269,352 @@
                     <option value="7">July 2026</option>
                     <option value="8">August 2026</option>
                     <option value="9">September 2026</option>
+                    <option value="10">October 2026</option>
+                    <option value="11">November 2026</option>
+                    <option value="12">December 2026</option>
                 </select>
-                <div class="input-hint" id="periodHint">Training period: January 13 – December 20, 2026</div>
+                <div class="input-hint" id="periodHint">Training period ends: December 20, 2026</div>
             </div>
 
             <div class="result-container hidden" id="resultContainer">
-                <div class="result-label">Total Investment per Student</div>
+                <div class="result-label">Total Investment</div>
                 <div class="result-value" id="totalCost">€0.00</div>
                 <div class="breakdown" id="breakdown"></div>
+                <div class="tax-note hidden" id="taxNote"></div>
             </div>
 
             <div class="button-group hidden" id="buttonGroup">
-                <button type="submit" class="btn-calculate">Calculate Total</button>
                 <button type="button" class="btn-reset" onclick="resetForm()">Reset</button>
             </div>
         </form>
     </div>
 
     <script>
-        const PRICES = {
-            ukraine:     20,
-            moldova:     21.5,
-            portugal:    24,
-            poland:      24,
-            czech:       24,
-            netherlands: 24,
-            luxembourg:  24,
-            italy:       24,
-            belgium:     24,
-            france:      24,
-            uk:          24,
+        /* ─────────────────────────────────────────────
+           STEP 0 — ACCESS CONTROL
+           Only allow access if ?key=esfera-2026-internal
+        ───────────────────────────────────────────── */
+        const SECRET_KEY = 'esfera-2026-internal';
+        const params     = new URLSearchParams(window.location.search);
+
+        if (params.get('key') === SECRET_KEY) {
+            document.getElementById('appScreen').style.display = 'block';
+        } else {
+            document.getElementById('unauthorizedScreen').style.display = 'block';
+        }
+
+        /* ─────────────────────────────────────────────
+           STEP 0.5 — UKRAINE EMPLOYEE TAX
+           Applies to BOTH mainstream and individual streams.
+           Multiplies the subtotal by 1.30 (×1.30).
+        ───────────────────────────────────────────── */
+        const UKRAINE_TAX_MULTIPLIER = 1.30;
+        const UKRAINE_TAX_ENABLED    = true;
+
+        /* ─────────────────────────────────────────────
+           STEP 1 — LANGUAGE → AVAILABLE STREAM TYPES
+        ───────────────────────────────────────────── */
+        const LANGUAGE_LABELS = {
+            english:    'English',
+            german:     'German',
+            polish:     'Polish',
+            portuguese: 'Portuguese',
+            french:     'French',
+            spanish:    'Spanish',
+        };
+        // Mainstream (group) is only offered for English and German.
+        // All 6 languages are available for Individual lessons.
+        const MAINSTREAM_LANGUAGES = ['english', 'german'];
+
+        /* ─────────────────────────────────────────────
+           STEP 2 — CALCULATOR LOGIC
+        ───────────────────────────────────────────── */
+        const PRICES_GROUP = {
+            ukraine:     { price: 20,   currency: '€' },
+            moldova:     { price: 21.5, currency: '€' },
+            portugal:    { price: 24,   currency: '€' },
+            poland:      { price: 24,   currency: '€' },
+            czech:       { price: 24,   currency: '€' },
+            netherlands: { price: 24,   currency: '€' },
+            luxembourg:  { price: 24,   currency: '€' },
+            italy:       { price: 24,   currency: '€' },
+            belgium:     { price: 24,   currency: '€' },
+            france:      { price: 24,   currency: '€' },
+            uk:          { price: 24,   currency: '€' },
+            germany:     { price: 24,   currency: '€' },
         };
 
-        const MONTHS = ['','January','February','March','April','May','June',
-                        'July','August','September','October','November','December'];
+        const PRICES_INDIVIDUAL = {
+            ukraine:     { local: 675,  native: 1025, currency: '₴' },
+            moldova:     { local: 15,   native: 21.5, currency: '€' },
+            portugal:    { local: 17.2, native: 24,   currency: '€' },
+            poland:      { local: 17.2, native: 24,   currency: '€' },
+            czech:       { local: 17.2, native: 24,   currency: '€' },
+            netherlands: { local: 17.2, native: 24,   currency: '€' },
+            luxembourg:  { local: 17.2, native: 24,   currency: '€' },
+            italy:       { local: 17.2, native: 24,   currency: '€' },
+            belgium:     { local: 17.2, native: 24,   currency: '€' },
+            france:      { local: 17.2, native: 24,   currency: '€' },
+            uk:          { local: 17.2, native: 24,   currency: '€' },
+            germany:     { local: 17.2, native: 24,   currency: '€' },
+        };
 
-        const locEl        = document.getElementById('location');
-        const startMonthEl = document.getElementById('startMonth');
-        const periodHintEl = document.getElementById('periodHint');
-        const resultEl     = document.getElementById('resultContainer');
-        const totalCostEl  = document.getElementById('totalCost');
-        const breakdownEl  = document.getElementById('breakdown');
-        const form         = document.getElementById('calcForm');
-
+        const MONTHS   = ['','January','February','March','April','May','June',
+                          'July','August','September','October','November','December'];
         const YEAR     = 2026;
         const END_DATE = new Date(YEAR, 11, 20);
+
+        // Remove past months from dropdown
+        (function () {
+            const now = new Date();
+            const cy = now.getFullYear(), cm = now.getMonth() + 1;
+            Array.from(document.getElementById('startMonth').options).forEach(opt => {
+                const v = parseInt(opt.value);
+                if (!v) return;
+                if (cy > YEAR || (cy === YEAR && v < cm)) opt.remove();
+            });
+        })();
+
+        function fmt(n) {
+            return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        let selectedTeacher = null;
 
         function show(id) { document.getElementById(id).classList.remove('hidden'); }
         function hide(id) { document.getElementById(id).classList.add('hidden'); }
 
-        locEl.addEventListener('change', function () {
-            const price = PRICES[this.value];
-            if (!price) return;
-            window.lessonPrice = price;
-            document.getElementById('infoPrice').textContent = Number.isInteger(price) ? price : +price.toFixed(2);
-            show('infoCardsContainer');
-            show('periodContainer');
-            show('buttonGroup');
-            resultEl.classList.add('hidden');
-            startMonthEl.value = '';
-            periodHintEl.className = 'input-hint';
-            periodHintEl.textContent = 'Training period: January 13 – December 20, 2026';
+        document.getElementById('language').addEventListener('change', function () {
+            ['typeContainer','locationContainer','teacherContainer','infoCardsContainer',
+             'lessonsContainer','periodContainer','buttonGroup','resultContainer'].forEach(hide);
+            document.getElementById('streamType').value    = '';
+            document.getElementById('location').value      = '';
+            document.getElementById('startMonth').value    = '';
+            document.getElementById('lessonsPerWeek').value = '';
+            document.getElementById('btnLocal').classList.remove('active');
+            document.getElementById('btnNative').classList.remove('active');
+            document.getElementById('eligibilityNote').style.display = 'none';
+            selectedTeacher = null;
+            window.lessonPrice = null;
+
+            if (!this.value) return;
+
+            const typeSelect  = document.getElementById('streamType');
+            const canMainstream = MAINSTREAM_LANGUAGES.includes(this.value);
+            typeSelect.innerHTML = '<option value="">Select type</option>' +
+                (canMainstream ? '<option value="mainstream">Mainstream (Group)</option>' : '') +
+                '<option value="individual">Individual</option>';
+            show('typeContainer');
         });
 
-        startMonthEl.addEventListener('change', calc);
-        form.addEventListener('submit', e => { e.preventDefault(); calc(); });
+        document.getElementById('streamType').addEventListener('change', function () {
+            ['locationContainer','teacherContainer','infoCardsContainer',
+             'lessonsContainer','periodContainer','buttonGroup','resultContainer'].forEach(hide);
+            document.getElementById('location').value      = '';
+            document.getElementById('startMonth').value    = '';
+            document.getElementById('lessonsPerWeek').value = '';
+            document.getElementById('btnLocal').classList.remove('active');
+            document.getElementById('btnNative').classList.remove('active');
+            selectedTeacher = null;
+            window.lessonPrice = null;
+
+            if (this.value) show('locationContainer');
+            document.getElementById('eligibilityNote').style.display =
+                this.value === 'individual' ? 'block' : 'none';
+            updateMonthOptions(this.value);
+        });
+
+        function updateMonthOptions(type) {
+            const sel = document.getElementById('startMonth');
+            Array.from(sel.options).forEach(opt => {
+                const v = parseInt(opt.value);
+                if (!v) return;
+                opt.style.display = (type === 'mainstream' && v > 9) ? 'none' : '';
+            });
+        }
+
+        document.getElementById('location').addEventListener('change', function () {
+            ['teacherContainer','infoCardsContainer','lessonsContainer',
+             'periodContainer','buttonGroup','resultContainer'].forEach(hide);
+            document.getElementById('startMonth').value     = '';
+            document.getElementById('lessonsPerWeek').value = '';
+            document.getElementById('btnLocal').classList.remove('active');
+            document.getElementById('btnNative').classList.remove('active');
+            selectedTeacher = null;
+            window.lessonPrice = null;
+
+            const type = document.getElementById('streamType').value;
+            if (!this.value) return;
+
+            if (type === 'mainstream') {
+                const entry = PRICES_GROUP[this.value];
+                if (!entry) return;
+                window.lessonPrice = entry.price;
+                window.currency    = entry.currency;
+                const p = Number.isInteger(entry.price) ? entry.price : +entry.price.toFixed(2);
+                document.getElementById('infoCardsContainer').innerHTML = `
+                    <div class="info-cards cols-3">
+                        <div class="info-card">
+                            <div class="info-card-value">${p}</div>
+                            <div class="info-card-label">Cost per Lesson, €</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-card-value">5</div>
+                            <div class="info-card-label">People in Group</div>
+                            <div class="info-card-sub">range: 4–6</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-card-value">2</div>
+                            <div class="info-card-label">Lessons per Week</div>
+                        </div>
+                    </div>`;
+                show('infoCardsContainer');
+                show('periodContainer');
+                show('buttonGroup');
+            } else {
+                show('teacherContainer');
+            }
+        });
+
+        function selectTeacher(type) {
+            selectedTeacher = type;
+            document.getElementById('btnLocal').classList.toggle('active',  type === 'local');
+            document.getElementById('btnNative').classList.toggle('active', type === 'native');
+
+            const loc   = document.getElementById('location').value;
+            const entry = PRICES_INDIVIDUAL[loc];
+            if (!entry) return;
+
+            const price = entry[type];
+            const cur   = entry.currency;
+            window.lessonPrice = price;
+            window.currency    = cur;
+
+            const p = Number.isInteger(price) ? price : +price.toFixed(2);
+            document.getElementById('infoCardsContainer').innerHTML = `
+                <div class="info-cards cols-2">
+                    <div class="info-card">
+                        <div class="info-card-value">${p}</div>
+                        <div class="info-card-label">Cost per Lesson, ${cur}</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-value">${type === 'native' ? 'Native' : 'Non-native'}</div>
+                        <div class="info-card-label">Teacher Type</div>
+                    </div>
+                </div>`;
+            show('infoCardsContainer');
+            show('lessonsContainer');
+            show('periodContainer');
+            show('buttonGroup');
+            document.getElementById('resultContainer').classList.add('hidden');
+            calc();
+        }
+
+        document.getElementById('lessonsPerWeek').addEventListener('input', calc);
+        document.getElementById('startMonth').addEventListener('change', calc);
+        document.getElementById('calcForm').addEventListener('submit', e => { e.preventDefault(); calc(); });
 
         function calc() {
-            const cost = window.lessonPrice || 0;
-            const sm   = parseInt(startMonthEl.value) || 0;
+            const type     = document.getElementById('streamType').value;
+            const cost     = window.lessonPrice || 0;
+            const cur      = window.currency || '€';
+            const sm       = parseInt(document.getElementById('startMonth').value) || 0;
+            const hintEl   = document.getElementById('periodHint');
+            const resultEl = document.getElementById('resultContainer');
 
-            periodHintEl.className = 'input-hint';
+            hintEl.className = 'input-hint';
+            document.getElementById('taxNote').classList.add('hidden');
 
-            if (!sm || !cost) { resultEl.classList.add('hidden'); return; }
+            let lpw = 2;
+            if (type === 'individual') {
+                lpw = parseInt(document.getElementById('lessonsPerWeek').value) || 0;
+                if (!lpw) { resultEl.classList.add('hidden'); return; }
+                if (lpw < 1 || lpw > 7) {
+                    hintEl.className    = 'input-hint warning';
+                    hintEl.textContent  = 'Please enter between 1 and 7 lessons per week';
+                    resultEl.classList.add('hidden');
+                    return;
+                }
+            }
+
+            if (!cost || !sm) { resultEl.classList.add('hidden'); return; }
 
             const startDay  = sm === 1 ? 13 : 1;
             const startDate = new Date(YEAR, sm - 1, startDay);
 
             if (startDate > END_DATE) {
-                periodHintEl.className = 'input-hint warning';
-                periodHintEl.textContent = 'Selected month is after December 20, 2026';
+                hintEl.className   = 'input-hint warning';
+                hintEl.textContent = 'Selected month is after December 20, 2026';
                 resultEl.classList.add('hidden');
                 return;
             }
 
             const days         = Math.round((END_DATE - startDate) / 86400000) + 1;
             const weeks        = days / 7;
-            const totalLessons = Math.round(weeks * 2);
-            const perPerson    = cost / 5;
-            const grand        = perPerson * totalLessons;
+            const weeksRound   = Math.round(weeks * 10) / 10;
+            const totalLessons = Math.round(weeks * lpw);
             const costDisplay  = Number.isInteger(cost) ? cost : +cost.toFixed(2);
-            const locName      = locEl.options[locEl.selectedIndex]?.text || '';
+            const loc          = document.getElementById('location');
+            const locValue     = loc.value;
+            const locName      = loc.options[loc.selectedIndex]?.text || '';
+            const langName     = LANGUAGE_LABELS[document.getElementById('language').value] || '';
+            const isUkraine    = locValue === 'ukraine';
 
-            periodHintEl.textContent = MONTHS[sm] + ' ' + startDay + ' – December 20, 2026 (' +
-                                       Math.round(weeks * 10) / 10 + ' weeks)';
+            let subtotal, breakdownHTML;
 
-            totalCostEl.textContent = '€' + grand.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            if (type === 'mainstream') {
+                subtotal = (cost / 5) * totalLessons;
+                const perPerson = cost / 5;
+                breakdownHTML =
+                    '<strong>' + MONTHS[sm] + ' ' + startDay + ', 2026 &rarr; December 20, 2026</strong><br>' +
+                    weeksRound + ' weeks &times; 2 lessons/week = <strong>' + totalLessons + ' lessons</strong><br>' +
+                    cur + costDisplay + ' &divide; 5 people = ' + cur + fmt(perPerson) + '/person per lesson<br>' +
+                    'Mainstream &middot; ' + langName + ' &middot; ' + locName;
+            } else {
+                subtotal = cost * totalLessons;
+                const teacherLabel = selectedTeacher === 'native' ? 'Native' : 'Non-native';
+                breakdownHTML =
+                    '<strong>' + MONTHS[sm] + ' ' + startDay + ', 2026 &rarr; December 20, 2026</strong><br>' +
+                    weeksRound + ' weeks &times; ' + lpw + ' lessons/week = <strong>' + totalLessons + ' lessons</strong><br>' +
+                    cur + costDisplay + '/lesson &middot; ' + teacherLabel + '<br>' +
+                    'Individual &middot; ' + langName + ' &middot; ' + locName;
+            }
 
-            breakdownEl.innerHTML =
-                '<strong>' + MONTHS[sm] + ' ' + startDay + ', 2026 &rarr; December 20, 2026</strong><br>' +
-                Math.round(weeks * 10) / 10 + ' weeks &times; 2 lessons/week = <strong>' + totalLessons + ' lessons</strong><br>' +
-                '€' + costDisplay + ' &divide; 5 people = €' + perPerson.toFixed(2) + '/person per lesson<br>' +
-                'General Stream &middot; ' + locName;
+            let grand = subtotal;
+            const taxNoteEl = document.getElementById('taxNote');
+            taxNoteEl.classList.add('hidden');
+            taxNoteEl.innerHTML = '';
 
-            resultEl.classList.remove('hidden');
+            // Ukraine employee tax: subtotal × 1.30, for both mainstream and individual
+            if (UKRAINE_TAX_ENABLED && isUkraine) {
+                grand = subtotal * UKRAINE_TAX_MULTIPLIER;
+                taxNoteEl.innerHTML =
+                    '<span class="icon">⚠️</span><strong>Includes employee tax (Ukraine)</strong><br>' +
+                    'Subtotal ' + cur + fmt(subtotal) + ' × 1.30 = ' + cur + fmt(grand);
+                taxNoteEl.classList.remove('hidden');
+            }
+
+            hintEl.textContent = MONTHS[sm] + ' ' + startDay + ' – December 20, 2026 (' + weeksRound + ' weeks)';
+
+            document.getElementById('totalCost').textContent = cur + fmt(grand);
+            document.getElementById('breakdown').innerHTML = breakdownHTML;
+            show('resultContainer');
         }
 
         function resetForm() {
-            form.reset();
-            ['infoCardsContainer','periodContainer','buttonGroup','resultContainer'].forEach(hide);
-            periodHintEl.textContent = 'Training period: January 13 – December 20, 2026';
+            document.getElementById('calcForm').reset();
+            selectedTeacher    = null;
             window.lessonPrice = null;
-            document.getElementById('infoPrice').textContent = '—';
+            window.currency    = null;
+            document.getElementById('eligibilityNote').style.display = 'none';
+            document.getElementById('btnLocal').classList.remove('active');
+            document.getElementById('btnNative').classList.remove('active');
+            document.getElementById('streamType').innerHTML = '<option value="">Select type</option>';
+            ['typeContainer','locationContainer','teacherContainer','infoCardsContainer',
+             'lessonsContainer','periodContainer','buttonGroup','resultContainer'].forEach(hide);
+            document.getElementById('periodHint').textContent      = 'Training period ends: December 20, 2026';
+            document.getElementById('infoCardsContainer').innerHTML = '';
+            document.getElementById('taxNote').innerHTML = '';
         }
     </script>
 </body>
